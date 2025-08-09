@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Book;
+use Illuminate\Http\Request;
+
+class BookController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $title = $request->input('title');
+        $filter = $request->input('filter', '');
+        $page = $request->input('page', 1);
+
+        $books = Book::when(
+            $title,
+            fn($query, $title) => $query->title($title)
+        );
+
+        $books = match ($filter) {
+            'popular_last_month' => $books->popularLastMonth(),
+            'popular_last_6month' => $books->popularLast6Months(),
+            'highest_rated_last_month' => $books->highestRatedLastMonth(),
+            'highest_rated_last_6month' => $books->highestRatedLast6Months(),
+            default => $books->latest()->withReviewsCount()->withAvgRating()
+        };
+
+        $cacheKey = 'books:' . $filter . ':' . $title . ':' . $page;
+
+        $books = cache()->remember($cacheKey, 3600, fn() => $books->paginate(10));
+
+        return view('books.index', ['books' => $books]);
+    }
+    /**
+     * Display the specified resource.
+     */
+    public function show(int $id)
+    {
+
+        $cacheKey = 'book:' . $id;
+
+        $book = cache()->remember(
+            $cacheKey,
+            3600,
+            fn() => Book::with([
+                'reviews' => fn($query) => $query->latest()
+            ])->withReviewsCount()->withAvgRating()->findOrFail($id)
+        );
+
+        return view('books.show', [
+            'book' => $book
+        ]);
+    }
+}
