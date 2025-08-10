@@ -94,7 +94,7 @@ class Book extends Model
     {
         return $query->highestRated(now()->subMonths(6))
             ->withReviewsCount(now()->subMonths(6))
-            ->minReviews(2);
+            ->minReviews(5);
     }
 
     protected static function booted()
