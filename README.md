@@ -88,6 +88,11 @@ A modern Laravel project for browsing and reviewing books with advanced filterin
 - Ensured clean and maintainable code with scoped queries and route model binding.
 
 ---
+screenshots: 
+![book review index](screenshots/bookreviewindex.png)
+![show a book with reviews](screenshots/showbook.png)
+
+---
 
 ## License
 This project is licensed under the MIT License.
